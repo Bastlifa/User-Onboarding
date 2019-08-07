@@ -1,11 +1,13 @@
-import React, {useState, useEffect} from "react"
+import React, {useEffect} from "react"
 import axios from "axios"
-import { withFormik, Form, Field } from 'formik'
+import { withFormik } from 'formik'
 import * as Yup from "yup";
+import { StyledForm, StyledField, ErrorP } from '../StyledComps'
+import { of } from "rxjs";
 
-const RegisterForm = ({values, errors, touched, status}) =>
+
+const RegisterForm = ({values, errors, touched, status, setUsers}) =>
 {
-    const [users, setUsers] = useState([])
     useEffect(_ =>
     {
         console.log("inf loop?")
@@ -14,49 +16,50 @@ const RegisterForm = ({values, errors, touched, status}) =>
             console.log("inf loop 2?")
             setUsers(users => [...users, status])
         }
-    }, [status])
+    }, [status, setUsers])
 
-    console.log(users)
     return (
-        <>
-        <Form>
+        <StyledForm>
             <div>
-                {touched.name && errors.name && <p>{errors.name}</p>}
-                <Field type="name" name="name" placeholder="Name" />
+                <StyledField type="name" name="name" placeholder="Name" />
+                {touched.name && errors.name && <ErrorP>{errors.name}</ErrorP>}
             </div>
             <div>
-                {touched.email && errors.email && <p>{errors.email}</p>}
-                <Field type="email" name="email" placeholder="Email" />
+                <StyledField type="email" name="email" placeholder="Email" />
+                {touched.email && errors.email && <ErrorP>{errors.email}</ErrorP>}
             </div>
             <div>
-                {touched.password && errors.password && <p>{errors.password}</p>}
-                <Field type="password" name="password" placeholder="Password" />
+                <StyledField type="password" name="password" placeholder="Password" />
+                {touched.password && errors.password && <ErrorP>{errors.password}</ErrorP>}
+            </div>
+            <div>
+                <StyledField component="select" name="role" >
+                    <option>Please Choose an Option</option>
+                    <option value="team-lead">Team Lead</option>
+                    <option value="team-member">Team Member</option>
+                    <option value="team-distracter">Team Distracter</option>
+                </StyledField>
+                {touched.role && errors.role && <ErrorP>{errors.role}</ErrorP>}
             </div>
             <label>
-                <Field type="checkbox" name="tos" checked={values.tos} />
+                <StyledField type="checkbox" name="tos" checked={values.tos} />
                 Accept TOS
+                {errors.tos && touched.tos && <ErrorP>{errors.tos}</ErrorP>}
             </label>
             <button type="submit">Submit!</button>
-        </Form>
-        {users.map(user => (
-            <>
-                <p>{user.name}</p>
-                <p>{user.email}</p>
-                <p>{String(user.tos)}</p>
-            </>
-        ))}
-        </>
+        </StyledForm>
     )
 }
 
 const FormikRegisterForm = withFormik({
-    mapPropsToValues({name, email, password, tos})
+    mapPropsToValues({name, email, password, tos, role})
     {
         return {
             name: name || "",
             email: email || "",
             password: password || "",
             tos: tos || false,
+            role: role || ""
         }
     },
 
@@ -70,6 +73,11 @@ const FormikRegisterForm = withFormik({
         password: Yup.string()
             .min(6,"Password must be longer than 6 characters")
             .required("Password is required"),
+        tos: Yup.boolean()
+            .oneOf([true], "Must agree to Terms of Service to continue"),
+        role: Yup.string()
+            .oneOf(["team-lead", "team-member", "team-distracter"], "Please select a role")
+            .required("Please select a role")
     }),
 
     handleSubmit(values, { resetForm, setErrors, setSubmitting, setStatus }) {

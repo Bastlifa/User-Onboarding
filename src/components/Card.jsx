@@ -1,10 +1,14 @@
 import React from "react"
-
+import { CardDiv } from '../StyledComps'
 const Card = (props) =>
 {
     const { user } = props
     return (
-        <div></div>
+        <CardDiv>
+            <h3>Name: {user.name}</h3>
+            <h3>Email: {user.email}</h3>
+            <h3>Role: {user.role}</h3>
+        </CardDiv>
     )
 }
 
